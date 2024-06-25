@@ -22,7 +22,22 @@ app.add_middleware(
 
 @app.get("/todos")
 async def get_todos(db: Session = Depends(get_db)) -> list[Todo]:
-    return db.exec(select(Todo)).all()
+    return map(lambda item: item.title, db.exec(select(Todo)).all())
+
+
+@app.get("/todos/{category}")
+async def get_todos_by_category(
+    category: str, db: Session = Depends(get_db)
+) -> list[str]:
+    return map(
+        lambda item: item.title,
+        db.exec(select(Todo).where(Todo.category == category)).all(),
+    )
+
+
+@app.get("/categories")
+async def get_categories(db: Session = Depends(get_db)) -> list[str]:
+    return db.exec(select(Todo.category)).all()
 
 
 @app.post("/todos")
