@@ -60,5 +60,5 @@ async def create_todo(todo: Todo, db: Session = Depends(get_db)) -> CreateTodoRe
         db.commit()
         return CreateTodoResponse(success=True, message="TODO successfully created")
     raise HTTPException(
-        status_code=400, detail=f"Todo with ID {todo.id} already exists"
+        status_code=422, detail=f"Todo with ID {todo.id} already exists"
     )
