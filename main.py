@@ -1,10 +1,12 @@
+from collections import defaultdict
+
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
 from database import get_db
 from models import Todo
-from schemas import CreateTodoResponse
+from schemas import Category, CreateTodoResponse
 
 
 app = FastAPI()
@@ -21,8 +23,18 @@ app.add_middleware(
 
 
 @app.get("/todos")
-async def get_todos(db: Session = Depends(get_db)) -> list[Todo]:
-    return map(lambda item: item.title, db.exec(select(Todo)).all())
+async def get_todos(db: Session = Depends(get_db)) -> list[Category]:
+    """Returns the todos grouped by category"""
+
+    todos = db.exec(select(Todo)).all()
+    categories = defaultdict(list)
+    for todo in todos:
+        categories[todo.category].append(todo)
+
+    return [
+        Category(title=title, todos=category_todos)
+        for title, category_todos in categories.items()
+    ]
 
 
 @app.get("/todos/{category}")
