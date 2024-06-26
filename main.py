@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
@@ -59,4 +59,6 @@ async def create_todo(todo: Todo, db: Session = Depends(get_db)) -> CreateTodoRe
         db.add(todo)
         db.commit()
         return CreateTodoResponse(success=True, message="TODO successfully created")
-    return CreateTodoResponse(success=False, message="Todo already exists")
+    raise HTTPException(
+        status_code=400, detail=f"Todo with ID {todo.id} already exists"
+    )
